@@ -187,7 +187,6 @@ fun MemeDetails(meme: Meme) {
     Surface(color = MaterialTheme.colors.secondary) {
         Box(
             modifier = Modifier
-                .padding(16.dp)
         ) {
             ZoomableImage(meme = meme)
             Text(
@@ -213,6 +212,7 @@ fun ZoomableImage(meme: Meme) {
             .clip(RectangleShape) // Clip the box content
             .fillMaxSize() // Give the size you want...
             .background(Color.Gray)
+            .padding(16.dp)
             .pointerInput(Unit) {
                 detectTransformGestures { centroid, pan, zoom, rotation ->
                     scale.value *= zoom
