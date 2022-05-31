@@ -7,6 +7,7 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -18,9 +19,14 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -48,22 +54,20 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    HomeView()
+                    HomeView(memeList = mainViewModel.movieListResponse)
+                    mainViewModel.getMemeList()
                 }
             }
         }
     }
 
     @Composable
-    fun HomeView() {
+    fun HomeView(memeList: List<Meme>) {
         val navController = rememberNavController()
 
         NavHost(navController, startDestination = "feed") {
             composable(route = "feed") {
-                MemeList(memeList = mainViewModel.movieListResponse, navController)
-                if (mainViewModel.movieListResponse.isEmpty()) {
-                    mainViewModel.getMemeList()
-                }
+                MemeList(memeList = memeList, navController)
             }
             composable(
                 route = "details",
@@ -91,16 +95,10 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MemeList(memeList: List<Meme>, navController: NavHostController) {
-    var selectedIndex by remember { mutableStateOf(-1) } //State of the lazy column. Based on it the recomposition will occur
     // LazyColumn is to show the list of the ui. It's kind of recycler view in compose.
     LazyColumn {
         itemsIndexed(items = memeList) { index, item ->
-            MemeItem(meme = item, index, selectedIndex) { i, meme ->
-                selectedIndex =
-                    i  //When we are updating the selectedIndex then re-composition will happen for updating the UI.
-//                navController.currentBackStackEntry?.arguments?.putAll(Bundle().apply {
-//                    putParcelable("meme", meme)
-//                })
+            MemeItem(meme = item, index, navController) { i, meme ->
                 navController.currentBackStackEntry?.savedStateHandle?.set("meme", meme)
 
                 navController.navigate("details")
@@ -111,7 +109,12 @@ fun MemeList(memeList: List<Meme>, navController: NavHostController) {
 }
 
 @Composable
-fun MemeItem(meme: Meme, index: Int, selectedIndex: Int, onClick: (Int, Meme) -> Unit) {
+fun MemeItem(
+    meme: Meme,
+    index: Int,
+    navController: NavHostController,
+    onClick: (Int, Meme) -> Unit
+) {
 
     Card(
         modifier = Modifier
@@ -186,17 +189,7 @@ fun MemeDetails(meme: Meme) {
             modifier = Modifier
                 .padding(16.dp)
         ) {
-            Image(
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize(),
-                painter = rememberImagePainter(
-                    data = meme.url,
-                    builder = {
-                        placeholder(R.drawable.placeholder)
-                    }
-                ),
-                contentDescription = meme.name,
-            )
+            ZoomableImage(meme = meme)
             Text(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -208,5 +201,41 @@ fun MemeDetails(meme: Meme) {
                 fontWeight = FontWeight.Bold,
             )
         }
+    }
+}
+
+@Composable
+fun ZoomableImage(meme: Meme) {
+    val scale = remember { mutableStateOf(1f) }
+    val rotationState = remember { mutableStateOf(1f) }
+    Box(
+        modifier = Modifier
+            .clip(RectangleShape) // Clip the box content
+            .fillMaxSize() // Give the size you want...
+            .background(Color.Gray)
+            .pointerInput(Unit) {
+                detectTransformGestures { centroid, pan, zoom, rotation ->
+                    scale.value *= zoom
+                    rotationState.value += rotation
+                }
+            }
+    ) {
+        Image(
+            modifier = Modifier
+                .align(Alignment.Center) // keep the image centralized into the Box
+                .graphicsLayer(
+                    // adding some zoom limits (min 50%, max 200%)
+                    scaleX = maxOf(.5f, minOf(3f, scale.value)),
+                    scaleY = maxOf(.5f, minOf(3f, scale.value)),
+                    rotationZ = rotationState.value
+                ),
+            contentDescription = null,
+            painter = rememberImagePainter(
+                data = meme.url,
+                builder = {
+                    placeholder(R.drawable.placeholder)
+                }
+            )
+        )
     }
 }
