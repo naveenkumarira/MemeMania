@@ -4,7 +4,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -54,11 +53,12 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MemeList(memeList: List<Meme>) {
-    var selectedIndex by remember { mutableStateOf(-1) }
+    var selectedIndex by remember { mutableStateOf(-1) } //State of the lazy column. Based on it the recomposition will occur
+    // LazyColumn is to show the list of the ui. It's kind of recycler view in compose.
     LazyColumn {
         itemsIndexed(items = memeList) { index, item ->
             MemeItem(meme = item, index, selectedIndex) { i ->
-                selectedIndex = i
+                selectedIndex = i  //When we are updating the selectedIndex then re-composition will happen for updating the UI.
             }
         }
     }
@@ -78,7 +78,7 @@ fun MemeItem(meme: Meme, index: Int, selectedIndex: Int, onClick: (Int) -> Unit)
             .height(250.dp), shape = RoundedCornerShape(8.dp), elevation = 4.dp
     ) {
         Surface(color = backgroundColor) {
-
+            //Box layout is equals to Frame layout in traditional UI.
             Box(
                 modifier = Modifier
                     .padding(4.dp)
@@ -107,7 +107,6 @@ fun MemeItem(meme: Meme, index: Int, selectedIndex: Int, onClick: (Int) -> Unit)
                         }
                     ),
                     contentDescription = meme.name,
-                    //                         .weight(0.2f) in modifier will takes the weight like in linear layout
                 )
                 Box(
                     modifier = Modifier
@@ -116,7 +115,10 @@ fun MemeItem(meme: Meme, index: Int, selectedIndex: Int, onClick: (Int) -> Unit)
                     contentAlignment = Alignment.BottomStart
                 ) {
                     Text(
-                        modifier = Modifier.fillMaxWidth().background(color = Color.Black).padding(16.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(color = Color.Black)
+                            .padding(16.dp),
                         textAlign = TextAlign.Start,
                         text = meme.name ?: "",
                         style = TextStyle(color = Color.White, fontSize = 16.sp),
