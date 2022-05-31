@@ -182,13 +182,11 @@ fun MemeItem(meme: Meme, index: Int, selectedIndex: Int, onClick: (Int, Meme) ->
          */
 fun MemeDetails(meme: Meme) {
     Surface(color = MaterialTheme.colors.secondary) {
-        Box(
-            modifier = Modifier
-                .padding(16.dp)
-        ) {
+        Box {
             Image(
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.fillMaxSize()
+                    .padding(16.dp),
                 painter = rememberImagePainter(
                     data = meme.url,
                     builder = {
