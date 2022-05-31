@@ -1,7 +1,9 @@
 package com.example.mememania.network
 
 
+import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
+import kotlinx.parcelize.Parcelize
 
 /**
  *
@@ -12,6 +14,7 @@ import com.google.gson.annotations.SerializedName
 "height": 1200,
 "box_count": 2
  */
+@Parcelize
 data class Meme(
     @SerializedName("box_count")
     val boxCount: Int?,
@@ -25,4 +28,4 @@ data class Meme(
     val url: String?,
     @SerializedName("width")
     val width: Int?
-)
+) : Parcelable
