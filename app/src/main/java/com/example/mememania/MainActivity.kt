@@ -15,14 +15,17 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -62,11 +65,11 @@ class MainActivity : ComponentActivity() {
 
 
 @Composable
-fun MemeList(memeList: List<Meme>, navController: NavHostController) {
+fun MemeList(mainViewModel: MainViewModel, memeList: List<Meme>, navController: NavHostController) {
     // LazyColumn is to show the list of the ui. It's kind of recycler view in compose.
-    LazyColumn {
+    LazyColumn(verticalArrangement = Arrangement.spacedBy(14.dp)) {
         itemsIndexed(items = memeList) { index, item ->
-            MemeItem(meme = item, index, navController) { i, meme ->
+            MemeItem(mainViewModel = mainViewModel, meme = item, index, navController) { i, meme ->
                 navController.currentBackStackEntry?.savedStateHandle?.set("meme", meme)
 
                 navController.navigate("details")
@@ -77,11 +80,17 @@ fun MemeList(memeList: List<Meme>, navController: NavHostController) {
 }
 
 @Composable
-fun MemeItem(meme: Meme, index: Int, navController: NavController, onClick: (Int, Meme) -> Unit) {
+fun MemeItem(
+    mainViewModel: MainViewModel,
+    meme: Meme,
+    index: Int,
+    navController: NavController,
+    onClick: (Int, Meme) -> Unit
+) {
 
     Card(
         modifier = Modifier
-            .padding(8.dp, 4.dp)
+            .padding(horizontal = 4.dp)
             .fillMaxWidth()
             .clickable { onClick(index, meme) }
             .height(250.dp), shape = RoundedCornerShape(8.dp), elevation = 4.dp
@@ -108,7 +117,7 @@ fun MemeItem(meme: Meme, index: Int, navController: NavController, onClick: (Int
                 )
 
                 Image(
-                    contentScale = ContentScale.Crop,
+                    contentScale = ContentScale.FillBounds,
                     painter = rememberImagePainter(
                         data = meme.url ?: "https://i.imgflip.com/30b1gx.jpg",
                         builder = {
@@ -118,23 +127,37 @@ fun MemeItem(meme: Meme, index: Int, navController: NavController, onClick: (Int
                     contentDescription = meme.name ?: "Drake Hotline Bling",
                 )
                 Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(12.dp),
+                    modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.BottomStart
                 ) {
-                    Text(
+                    val favIcon =
+                        if (meme.isLiked) R.drawable.ic_favourite else R.drawable.ic_favorite_default
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceAround,
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .background(color = Color.Black)
-                            .padding(16.dp),
-                        textAlign = TextAlign.Start,
-                        text = meme.name ?: "Drake Hotline Bling",
-                        style = TextStyle(color = Color.White, fontSize = 16.sp),
-                        fontWeight = FontWeight.Bold,
-                    )
-                }
+                            .padding(12.dp)
+                    ) {
+                        Text(
+                            modifier = Modifier
+                                .background(color = Color.Black)
+                                .padding(16.dp),
+                            textAlign = TextAlign.Start,
+                            text = meme.name ?: "Drake Hotline Bling",
+                            style = TextStyle(color = Color.White, fontSize = 16.sp),
+                            fontWeight = FontWeight.Bold,
+                        )
+                        Image(
+                            modifier = Modifier
+                                .padding(10.dp)
+                                .clickable {
+                                    mainViewModel.performLike(meme)
+                                },
+                            painter = painterResource(id = favIcon),
+                            contentDescription = ""
+                        )
+                    }
 
+                }
             }
         }
     }
@@ -219,27 +242,23 @@ fun MainScreen(mainViewModel: MainViewModel) {
     ) {
         NavHost(navController, startDestination = "home") {
             composable(route = "home") {
-                MemeList(memeList = mainViewModel.movieListResponse, navController)
+                MemeList(
+                    mainViewModel = mainViewModel,
+                    memeList = mainViewModel.movieListResponse,
+                    navController
+                )
                 if (mainViewModel.movieListResponse.isEmpty()) {
                     mainViewModel.getMemeList()
                 }
             }
             composable("my_favourite") {
-                FavouriteScreen()
+                FavouriteScreen(mainViewModel, navController)
             }
             composable(
                 route = "details",
                 arguments = listOf(navArgument("meme") {
                     type = NavType.ParcelableType(Meme::class.java)
-                    defaultValue = Meme(
-                        name = "DefaultMeme",
-                        url = "https://i.imgflip.com/30b1gx.jpg",
-                        height = null,
-                        id = "",
-                        width = 0,
-                        boxCount = 0,
-                        isLiked = false
-                    )
+                    defaultValue = Meme(name = "DefaultMeme", url = "", height = null, id = "", width = 0, boxCount = 0, isLiked = false)
                 })
             ) {
                 navController.previousBackStackEntry?.savedStateHandle?.get<Meme>("meme")
@@ -252,10 +271,28 @@ fun MainScreen(mainViewModel: MainViewModel) {
 }
 
 @Composable
-fun FavouriteScreen() {
-    Surface(color = MaterialTheme.colors.secondary) {
-        Box {
-            Text(text = "FavouriteScreen")
+fun FavouriteScreen(mainViewModel: MainViewModel, navController: NavController) {
+    val memeList = mainViewModel.movieListResponse.filter { it.isLiked }
+    Surface() {
+        LazyColumn(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            itemsIndexed(items = memeList) { index, item ->
+
+                    Card(
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .fillMaxWidth()
+                            .height(100.dp)
+                            .clickable {
+                                navController.currentBackStackEntry?.savedStateHandle?.set("meme", item)
+                                navController.navigate("details")
+                            },
+                        shape = RoundedCornerShape(2.dp), elevation = 4.dp
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Text(text = item.name ?: "",  fontWeight = FontWeight.ExtraBold)
+                        }
+                    }
+            }
         }
     }
 }

@@ -6,4 +6,5 @@ interface MemeRepository {
     suspend fun saveMeme(memes: List<Meme>): Unit
     suspend fun fetchMemes(): List<Meme>
     suspend fun getMeme(): List<Meme>
+    suspend fun performLike(meme: Meme)
 }

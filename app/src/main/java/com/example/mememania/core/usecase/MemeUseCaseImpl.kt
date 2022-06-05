@@ -7,4 +7,8 @@ class MemeUseCaseImpl(val repository: MemeRepository): MemeUseCase {
     override suspend fun getMeme(): List<Meme> {
         return repository.getMeme()
     }
+
+    override suspend fun updateMeme(meme: Meme) {
+        repository.performLike(meme = meme)
+    }
 }

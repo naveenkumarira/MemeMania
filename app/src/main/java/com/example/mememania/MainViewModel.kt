@@ -1,7 +1,6 @@
 package com.example.mememania
 
 import android.app.Application
-import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -33,11 +32,18 @@ class MainViewModel : ViewModel() {
         viewModelScope.launch {
             memeUseCase.getMeme()
             try {
-                val movieList = memeRepo.fetchMemes()
+                val movieList = memeRepo.getMeme()
                 movieListResponse = movieList
             } catch (e: Exception) {
                 errorMessage = e.message.toString()
             }
+        }
+    }
+
+    fun performLike(meme: Meme) {
+        viewModelScope.launch {
+            memeRepo.performLike(meme)
+            movieListResponse = memeRepo.getMeme()
         }
     }
 }

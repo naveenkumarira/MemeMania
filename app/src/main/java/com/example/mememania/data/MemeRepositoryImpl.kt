@@ -13,7 +13,7 @@ class MemeRepositoryImpl(
 ) :
     MemeRepository {
     override suspend fun saveMeme(memes: List<Meme>): Unit =
-        memeDao.insertMeme(memes.map { it.mapToSavedMeme() })
+        memeDao.insertMemes(memes.map { it.mapToSavedMeme() })
 
     override suspend fun fetchMemes(): List<Meme> {
         return try {
@@ -38,5 +38,9 @@ class MemeRepositoryImpl(
                 it.mapToMeme()
             }
         }
+    }
+
+    override suspend fun performLike(meme: Meme) {
+        memeDao.insertMeme(meme = meme.copy(isLiked = !meme.isLiked).mapToSavedMeme())
     }
 }
