@@ -36,7 +36,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import coil.compose.rememberImagePainter
-import com.example.mememania.network.Meme
+import com.example.mememania.data.network.Meme
 import com.example.mememania.ui.theme.MemeManiaTheme
 import com.example.mememania.ui.theme.navigation.BottomNavItem
 
@@ -45,6 +45,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        mainViewModel.initViewModel(application = application)
         setContent {
             MemeManiaTheme {
                 // A surface container using the 'background' color from the theme
@@ -236,7 +237,8 @@ fun MainScreen(mainViewModel: MainViewModel) {
                         height = null,
                         id = "",
                         width = 0,
-                        boxCount = 0
+                        boxCount = 0,
+                        isLiked = false
                     )
                 })
             ) {

@@ -1,4 +1,4 @@
-package com.example.mememania.network
+package com.example.mememania.data.network
 
 
 import com.google.gson.annotations.SerializedName
