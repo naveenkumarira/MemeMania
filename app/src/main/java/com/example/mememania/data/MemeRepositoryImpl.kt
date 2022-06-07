@@ -6,8 +6,9 @@ import com.example.mememania.data.local.MemeDao
 import com.example.mememania.data.local.mapToMeme
 import com.example.mememania.data.network.Meme
 import com.example.mememania.data.network.mapToSavedMeme
+import javax.inject.Inject
 
-class MemeRepositoryImpl(
+class MemeRepositoryImpl @Inject constructor(
     private val memeDao: MemeDao,
     private val memeApiService: MemeApiService
 ) :

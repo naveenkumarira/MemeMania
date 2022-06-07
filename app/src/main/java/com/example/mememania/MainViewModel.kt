@@ -12,27 +12,20 @@ import com.example.mememania.data.MemeRepository
 import com.example.mememania.data.MemeRepositoryImpl
 import com.example.mememania.data.local.MemeDatabase
 import com.example.mememania.data.network.Meme
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class MainViewModel : ViewModel() {
+@HiltViewModel
+class MainViewModel @Inject constructor(val memeUseCase: MemeUseCase) : ViewModel() {
+
     var movieListResponse: List<Meme> by mutableStateOf(listOf())
-    private lateinit var memeRepo: MemeRepository
-    private lateinit var memeUseCase: MemeUseCase
-    var errorMessage: String by mutableStateOf("")
-
-    fun initViewModel(application: Application) {
-        memeRepo = MemeRepositoryImpl(
-            MemeDatabase.getDatabase(application).memeDao(),
-            MemeApiService.getInstance()
-        )
-        memeUseCase = MemeUseCaseImpl(repository = memeRepo)
-    }
+    private var errorMessage: String by mutableStateOf("")
 
     fun getMemeList() {
         viewModelScope.launch {
-            memeUseCase.getMeme()
             try {
-                val movieList = memeRepo.getMeme()
+                val movieList = memeUseCase.getMeme()
                 movieListResponse = movieList
             } catch (e: Exception) {
                 errorMessage = e.message.toString()
@@ -42,8 +35,8 @@ class MainViewModel : ViewModel() {
 
     fun performLike(meme: Meme) {
         viewModelScope.launch {
-            memeRepo.performLike(meme)
-            movieListResponse = memeRepo.getMeme()
+            memeUseCase.updateMeme(meme)
+            movieListResponse = memeUseCase.getMeme()
         }
     }
 }
