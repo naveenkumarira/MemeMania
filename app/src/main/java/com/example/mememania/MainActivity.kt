@@ -169,7 +169,7 @@ fun MemeItem(
          * @param meme contains the meme info
          */
 fun MemeDetails(meme: Meme) {
-    Surface(color = MaterialTheme.colors.secondary) {
+    Surface() {
         Box {
             Image(
                 contentScale = ContentScale.Crop,
