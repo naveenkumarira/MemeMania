@@ -3,10 +3,8 @@ package com.example.mememania
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -26,6 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -40,13 +39,13 @@ import coil.compose.rememberImagePainter
 import com.example.mememania.data.network.Meme
 import com.example.mememania.ui.theme.MemeManiaTheme
 import com.example.mememania.ui.theme.navigation.BottomNavItem
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    val mainViewModel by viewModels<MainViewModel>()
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        mainViewModel.initViewModel(application = application)
+        //mainViewModel.initViewModel(application = application)
         setContent {
             MemeManiaTheme {
                 // A surface container using the 'background' color from the theme
@@ -54,7 +53,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    MainScreen(mainViewModel = mainViewModel)
+                    MainScreen()
                 }
             }
         }
@@ -118,7 +117,8 @@ fun MemeItem(
                     contentDescription = meme.name ?: "Drake Hotline Bling",
                 )
                 Box(
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier
+                        .fillMaxSize()
                         .background(
                             brush = Brush.verticalGradient(
                                 colors = listOf(
@@ -233,7 +233,8 @@ fun AppBottomNavigation(navController: NavController) {
 }
 
 @Composable
-fun MainScreen(mainViewModel: MainViewModel) {
+fun MainScreen() {
+    val mainViewModel = hiltViewModel<MainViewModel>()
     val navController = rememberNavController()
     Scaffold(
         bottomBar = { AppBottomNavigation(navController = navController) },
@@ -282,7 +283,10 @@ fun FavouriteScreen(mainViewModel: MainViewModel, navController: NavController) 
                             .fillMaxWidth()
                             .height(100.dp)
                             .clickable {
-                                navController.currentBackStackEntry?.savedStateHandle?.set("meme", item)
+                                navController.currentBackStackEntry?.savedStateHandle?.set(
+                                    "meme",
+                                    item
+                                )
                                 navController.navigate("details")
                             },
                         shape = RoundedCornerShape(2.dp), elevation = 4.dp
