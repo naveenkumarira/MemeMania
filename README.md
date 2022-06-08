@@ -11,7 +11,8 @@
 - Room
 - Hilt
 - Coroutine
-
+- Unit test for compose - In progress
+- UI test for compose - Yet to add
 # Screenshots
 
 ### Home Page  : Meme Feed
