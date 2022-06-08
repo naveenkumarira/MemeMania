@@ -2,7 +2,7 @@
 - Fetch data from API and show it on the compose lazy list
 - Simple navigation added 
 - Added Bottom Navigation Bar
-- Room Db Added to store the favourite memes 
+- Room Db Added to store & retrieve the favourite memes 
 - Meme Detail screen 
 
 # Tech Stack:
