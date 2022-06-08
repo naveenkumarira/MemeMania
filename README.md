@@ -11,7 +11,7 @@
 - Room
 - Hilt
 - Coroutine
-- Unit test for compose - In progress
+- Unit test - In progress
 - UI test for compose - Yet to add
 # Screenshots
 
